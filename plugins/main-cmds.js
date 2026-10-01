@@ -166,32 +166,14 @@ bandah(
             const menuimg = botConfig.MENU_IMG || ALIVE_IMG;
             const caption = botConfig.CAPTION || "POWERED BY TEAM-BANDAHEALI";
 
-            const voiceClips = [
-                "https://cdn.ironman.my.id/i/7p5plg.mp4",
-                "https://cdn.ironman.my.id/i/l4dyvg.mp4",
-                "https://cdn.ironman.my.id/i/4z93dg.mp4",
-                "https://cdn.ironman.my.id/i/m9gwk0.mp4",
-                "https://cdn.ironman.my.id/i/gr1jjc.mp4",
-                "https://cdn.ironman.my.id/i/lbr8of.mp4",
-                "https://cdn.ironman.my.id/i/0z95mz.mp4",
-                "https://cdn.ironman.my.id/i/rldpwy.mp4",
-                "https://files.catbox.moe/bat4dt.mp3",
-                "https://files.catbox.moe/nugg7o.mp3",
-                "https://files.catbox.moe/fcqzmk.mp3",
-                "https://files.catbox.moe/tqzlfl.mp3",
-            ];
-            const rClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
-
-            const thumbnailRes = await axios.get(menuimg, { responseType: "arraybuffer" });
+            const thumbnailRes = await axios.get(menuimg, {
+                responseType: "arraybuffer"
+            });
             const thumbnailBuffer = Buffer.from(thumbnailRes.data, "binary");
 
             await conn.sendMessage(
                 from,
                 {
-                    audio: { url: rClip },
-                    mimetype: "audio/mp4",
-                    ptt: false,
-                    waveform: [99, 0, 99, 0, 99],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
