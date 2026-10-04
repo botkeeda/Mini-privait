@@ -2,7 +2,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import { bandah } from '../command.js';
+import { bandah, commands } from '../command.js';
 import config from '../config.js';
 import os from 'os';
 import path from 'path';
@@ -340,4 +340,82 @@ bandah(
             reply(`❌ Error: ${err.message}`);
         }
     },
+);
+
+// ======================================================
+// MENU
+// ======================================================
+
+bandah(
+    {
+        pattern: "menu",
+        alias: ["help", "list"],
+        desc: "Show bot command menu",
+        category: "main",
+        react: "📜",
+        filename: __filename,
+    },
+    async (conn, mek, m, { from, reply, userConfig }) => {
+        try {
+            const botConfig = userConfig || {};
+            const botname = botConfig.BOT_NAME || "SMD-MINI";
+            const prefix = config.PREFIX || ".";
+            const menuimg = botConfig.MENU_IMG || ALIVE_IMG;
+
+            const cmdsList = (typeof commands !== 'undefined' && Array.isArray(commands)) ? commands : [];
+            const categories = {};
+
+            cmdsList.forEach((cmd) => {
+                if (!cmd.pattern) return;
+                const cat = (cmd.category || "misc").toLowerCase();
+                if (!categories[cat]) categories[cat] = [];
+                if (!categories[cat].includes(cmd.pattern)) {
+                    categories[cat].push(cmd.pattern);
+                }
+            });
+
+            let menuText = `╭━━━❰ *${toSmallCaps(botname)}* ❱━━━╮\n`;
+            menuText += `┃ 👤 *Owner:* ${botConfig.OWNER_NAME || "Bandaheali"}\n`;
+            menuText += `┃ 🌐 *Prefix:* \`\`\`${prefix}\`\`\`\n`;
+            menuText += `┃ 📅 *Date:* ${new Date().toLocaleDateString()}\n`;
+            menuText += `┃ 👥 *Commands:* ${cmdsList.length}\n`;
+            menuText += `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n`;
+
+            const sortedCategories = Object.keys(categories).sort();
+            for (const cat of sortedCategories) {
+                menuText += `*┌───❰ ${toSmallCaps(cat)} ❱* \n`;
+                for (const cmd of categories[cat].sort()) {
+                    menuText += `*│* ➜ \`\`\`${prefix}${cmd}\`\`\`\n`;
+                }
+                menuText += `*└──────────────* \n\n`;
+            }
+
+            menuText += `_Powered by Team-Bandaheali_`;
+
+            await conn.sendMessage(
+                from,
+                {
+                    image: { url: menuimg },
+                    caption: menuText,
+                    contextInfo: {
+                        mentionedJid: [m.sender],
+                        forwardingScore: 999,
+                        isForwarded: true,
+                        externalAdReply: {
+                            title: `${toSmallCaps(botname)} MENU`,
+                            body: "Recite Durood Shareef",
+                            mediaType: 1,
+                            thumbnailUrl: menuimg,
+                            sourceUrl: config.REPO || "https://github.com/iTx-Sarkar",
+                            showAdAttribution: true,
+                        },
+                    },
+                },
+                { quoted: mek }
+            );
+        } catch (err) {
+            console.error("Menu Error:", err);
+            reply(`An error occurred: ${err.message}`);
+        }
+    }
 );
