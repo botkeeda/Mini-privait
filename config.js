@@ -6,7 +6,7 @@ dotenv.config();
 const config = {
     MONGODB_URL:
         process.env.DATABASE_URL|| settings.DATABASE ||
-        "",
+        "mongodb+srv://vagom95123_db_user:rgR1vtrdkSDS5zw9@cluster25.g2s1rix.mongodb.net/?appName=Cluster25",
 
     DB_NAME: process.env.DB_NAME || settings.DB_NAME || "shaban",
     PORT: process.env.PORT || settings.PORT || "20252",
@@ -26,7 +26,7 @@ const config = {
     ANTI_STATUS: "true",
 
     AUTO_RECORDING: "false",
-    AUTO_REACT: "false",
+    AUTO_REACT: "true",
     AUTO_TYPING: "false",
     ALWAYS_ONLINE: "false",
     OWNER_REACT: "false",
@@ -133,7 +133,7 @@ const config = {
         ANTI_STATUS: "true",
 
         AUTO_RECORDING: "false",
-        AUTO_REACT: "false",
+        AUTO_REACT: "true",
         AUTO_TYPING: "false",
         ALWAYS_ONLINE: "false",
         OWNER_REACT: "false",
