@@ -8,7 +8,7 @@ const config = {
         process.env.DATABASE_URL|| settings.DATABASE ||
         "",
 
-    DB_NAME: process.env.DB_NAME || settings.DB_NAME || "smd-bot",
+    DB_NAME: process.env.DB_NAME || settings.DB_NAME || "shaban",
     PORT: process.env.PORT || settings.PORT || "20252",
 
     COLLECTIONS: {
