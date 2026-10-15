@@ -1,6 +1,6 @@
 // ======================================================
 // plugins/song.js
-// Song / Play — YouTube MP3 Downloader (with search)
+// Song / Play / Video — YouTube MP3 & MP4 Downloader
 // ======================================================
 
 import { fileURLToPath } from 'url';
@@ -15,228 +15,351 @@ import yts from 'yt-search';
 // CONSTANTS
 // ======================================================
 
-const YT_API_BASE = "https://bandaheali-apis.netlify.app/api/downloader/ytmp3";
-const YT_API_KEY  = "bandaheali";
+const YT_API_BASE = "https://jawad-tech.vercel.app/download/ytdl";
 
-// Small caps helper (agar aapke paas shared helper hai to import kar lo,
-// warna ye inline copy use karo)
+// ======================================================
+// SMALL CAPS
+// ======================================================
+
 const smallCapsMap = {
-    'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ',
-    'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ',
-    's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 'y': 'ʏ', 'z': 'ᴢ',
-    'A': 'ᴀ', 'B': 'ʙ', 'C': 'ᴄ', 'D': 'ᴅ', 'E': 'ᴇ', 'F': 'ғ', 'G': 'ɢ', 'H': 'ʜ', 'I': 'ɪ',
-    'J': 'ᴊ', 'K': 'ᴋ', 'L': 'ʟ', 'M': 'ᴍ', 'N': 'ɴ', 'O': 'ᴏ', 'P': 'ᴘ', 'Q': 'ǫ', 'R': 'ʀ',
-    'S': 's', 'T': 'ᴛ', 'U': 'ᴜ', 'V': 'ᴠ', 'W': 'ᴡ', 'X': 'x', 'Y': 'ʏ', 'Z': 'ᴢ'
+    'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ',
+    'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ', 'j': 'ᴊ',
+    'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ',
+    'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ', 's': 's', 't': 'ᴛ',
+    'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 'y': 'ʏ',
+    'z': 'ᴢ',
+    'A': 'ᴀ', 'B': 'ʙ', 'C': 'ᴄ', 'D': 'ᴅ', 'E': 'ᴇ',
+    'F': 'ғ', 'G': 'ɢ', 'H': 'ʜ', 'I': 'ɪ', 'J': 'ᴊ',
+    'K': 'ᴋ', 'L': 'ʟ', 'M': 'ᴍ', 'N': 'ɴ', 'O': 'ᴏ',
+    'P': 'ᴘ', 'Q': 'ǫ', 'R': 'ʀ', 'S': 's', 'T': 'ᴛ',
+    'U': 'ᴜ', 'V': 'ᴠ', 'W': 'ᴡ', 'X': 'x', 'Y': 'ʏ',
+    'Z': 'ᴢ'
 };
 
 function toSmallCaps(txt) {
     if (!txt || typeof txt !== "string") return "";
-    return txt.split("").map((c) => smallCapsMap[c] || c).join("");
+    return txt.split("").map(c => smallCapsMap[c] || c).join("");
 }
 
 // ======================================================
-// HELPERS
+// YOUTUBE HELPERS
 // ======================================================
 
 function isYouTubeUrl(input) {
-    return /youtu\.?be|youtube\.com/i.test(input || "");
+    return /(?:youtube\.com|youtu\.be)/i.test(input || "");
 }
 
-// Extract videoId from any YouTube URL form
 function extractVideoId(url) {
     if (!url) return null;
+
     const patterns = [
-        /(?:youtube\.com\/watch\?v=)([A-Za-z0-9_-]{11})/,
-        /(?:youtu\.be\/)([A-Za-z0-9_-]{11})/,
-        /(?:youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,
-        /(?:youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/,
-        /(?:youtube\.com\/live\/)([A-Za-z0-9_-]{11})/
+        /youtube\.com\/watch\?.*?\bv=([A-Za-z0-9_-]{11})/,
+        /youtu\.be\/([A-Za-z0-9_-]{11})/,
+        /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/,
+        /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/,
+        /youtube\.com\/live\/([A-Za-z0-9_-]{11})/
     ];
-    for (const p of patterns) {
-        const m = url.match(p);
-        if (m && m[1]) return m[1];
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match?.[1]) return match[1];
     }
+
     return null;
 }
 
-// Normalize any YouTube URL to canonical watch URL
 function normalizeYouTubeUrl(url) {
     const id = extractVideoId(url);
-    if (id) return `https://www.youtube.com/watch?v=${id}`;
-    return url;
+    return id
+        ? `https://www.youtube.com/watch?v=${id}`
+        : url;
 }
 
-// Search YouTube with yt-search
 async function searchYouTube(query) {
     try {
-        const r = await yts(query);
-        const video = r?.videos?.[0];
+        const result = await yts(query);
+        const video = result?.videos?.[0];
+
         if (!video) return null;
+
         return {
             url: video.url,
             title: video.title,
-            duration: video.timestamp,
-            thumbnail: video.thumbnail,
+            duration: video.timestamp || "N/A",
+            thumbnail: video.thumbnail || "",
             author: video.author?.name || "Unknown",
-            videoId: video.videoId,
+            videoId: video.videoId
         };
-    } catch (e) {
-        console.error("[yt-search] error:", e.message);
+    } catch (error) {
+        console.error("[yt-search] error:", error.message);
         return null;
     }
 }
 
 // ======================================================
-// MAIN HANDLER
+// NEW API HELPER
+// Response:
+// {
+//   status: true,
+//   creator: "JawadTechXD",
+//   result: {
+//     title: "...",
+//     mp3: "https://...",
+//     mp4: "https://..."
+//   }
+// }
 // ======================================================
 
-async function handleYouTubeAudio(conn, mek, m, { from, args, reply, userConfig }) {
+async function fetchYouTubeMedia(targetUrl) {
+    const response = await axios.get(YT_API_BASE, {
+        params: {
+            url: targetUrl
+        },
+        timeout: 60000
+    });
+
+    const data = response?.data;
+
+    if (data?.status !== true || !data?.result) {
+        throw new Error("API failed to return a valid result.");
+    }
+
+    return {
+        title: data.result.title || "Unknown Title",
+        mp3: data.result.mp3 || null,
+        mp4: data.result.mp4 || null,
+        creator: data.creator || "Unknown"
+    };
+}
+
+// ======================================================
+// COMMON HANDLER — MP3 / MP4
+// ======================================================
+
+async function handleYouTubeMedia(
+    conn,
+    mek,
+    m,
+    { from, args, reply, userConfig },
+    mediaType = "mp3"
+) {
     try {
         let query = args.join(" ").trim();
 
-        // Reply-to support (agar user ne link pe reply kiya ho)
+        // Reply-to YouTube link support
         if (!query && m.quoted) {
-            const q = m.quoted;
-            const text =
-                q.text ||
-                q.body ||
-                q.message?.conversation ||
-                q.message?.extendedTextMessage?.text ||
-                q.msg?.text ||
+            const quoted = m.quoted;
+
+            const quotedText =
+                quoted.text ||
+                quoted.body ||
+                quoted.message?.conversation ||
+                quoted.message?.extendedTextMessage?.text ||
+                quoted.msg?.text ||
                 "";
-            if (text && isYouTubeUrl(text)) query = text.trim();
+
+            if (isYouTubeUrl(quotedText)) {
+                query = quotedText.trim();
+            }
         }
 
         if (!query) {
             return reply(
-                `🎵 *Usage:*\n` +
-                `• *.song <youtube link>*\n` +
-                `• *.song <song name>* (search)\n` +
-                `• Reply to a YT link with *.song*`
+                `🎬 *YouTube Downloader Usage:*\n\n` +
+                `🎵 *.song <YouTube link>*\n` +
+                `🎵 *.song <song name>*\n` +
+                `▶️ *.play <song name or link>*\n` +
+                `🎥 *.video <YouTube link>*\n\n` +
+                `↪️ Reply to a YouTube link with the command.`
             );
         }
 
-        await conn.sendMessage(from, { react: { text: "🔍", key: mek.key } });
+        await conn.sendMessage(from, {
+            react: { text: "🔍", key: mek.key }
+        });
 
         let targetUrl;
         let metaInfo = null;
 
         if (isYouTubeUrl(query)) {
             targetUrl = normalizeYouTubeUrl(query);
+
+            if (!extractVideoId(targetUrl)) {
+                await conn.sendMessage(from, {
+                    react: { text: "❌", key: mek.key }
+                });
+
+                return reply("❌ Invalid YouTube URL.");
+            }
         } else {
-            // Search via yt-search
             const found = await searchYouTube(query);
+
             if (!found) {
-                await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
+                await conn.sendMessage(from, {
+                    react: { text: "❌", key: mek.key }
+                });
+
                 return reply("❌ No results found on YouTube.");
             }
-            targetUrl = found.url;
+
+            targetUrl = normalizeYouTubeUrl(found.url);
             metaInfo = found;
         }
 
-        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
+        await conn.sendMessage(from, {
+            react: { text: "⏳", key: mek.key }
+        });
 
-        // Call download API
-        const apiUrl = `${YT_API_BASE}?url=${encodeURIComponent(targetUrl)}&key=${YT_API_KEY}`;
-        const res = await axios.get(apiUrl, { timeout: 60000 });
+        // Fetch media from the new API
+        const result = await fetchYouTubeMedia(targetUrl);
 
-        if (!res.data?.status || !res.data?.result) {
-            await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
-            return reply("❌ Failed to fetch audio from API.");
+        const mediaUrl = mediaType === "mp4"
+            ? result.mp4
+            : result.mp3;
+
+        if (!mediaUrl) {
+            await conn.sendMessage(from, {
+                react: { text: "❌", key: mek.key }
+            });
+
+            return reply(
+                mediaType === "mp4"
+                    ? "❌ API did not return an MP4 download URL."
+                    : "❌ API did not return an MP3 download URL."
+            );
         }
 
-        const r = res.data.result;
-
-        const audioUrl  = r.audio_url || r.mp3_url || r.audio || r.url;
-        const title     = r.title || metaInfo?.title || "Unknown Title";
-        const duration  = r.duration || metaInfo?.duration || "N/A";
-        const bitrate   = r.bitrate || "128kbps";
-        const thumbnail = r.thumbnail || metaInfo?.thumbnail || "";
-        const author    = r.author || metaInfo?.author || "Unknown";
-
-        if (!audioUrl) {
-            await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
-            return reply("❌ No audio URL returned.");
-        }
-
-        await conn.sendMessage(from, { react: { text: "⬇️", key: mek.key } });
-
-        const botname = (userConfig?.BOT_NAME) || config.BOT_NAME || "SMD-MINI";
+        const title = result.title || metaInfo?.title || "YouTube Media";
+        const thumbnail = metaInfo?.thumbnail || "";
+        const author = metaInfo?.author || "Unknown";
+        const duration = metaInfo?.duration || "N/A";
+        const botname =
+            userConfig?.BOT_NAME ||
+            config.BOT_NAME ||
+            "SMD-MINI";
 
         const caption =
-            `🎵 *${toSmallCaps(title)}*\n\n` +
+            `${mediaType === "mp4" ? "🎬" : "🎵"} *${toSmallCaps(title)}*\n\n` +
             `┌───────────────────⭓\n` +
             `│ 👤 *Artist:* ${author}\n` +
             `│ ⏱️ *Duration:* ${duration}\n` +
-            `│ 🎚️ *Bitrate:* ${bitrate}\n` +
+            `│ 📁 *Format:* ${mediaType.toUpperCase()}\n` +
             `└───────────────────⭓\n\n` +
             `> ⚡ Powered By ${toSmallCaps(botname)}`;
 
-        // Send thumbnail preview (optional, nice UX)
-        try {
-            if (thumbnail) {
+        await conn.sendMessage(from, {
+            react: { text: "⬇️", key: mek.key }
+        });
+
+        // Optional thumbnail preview
+        if (mediaType === "mp3" && thumbnail) {
+            try {
                 await conn.sendMessage(
                     from,
                     {
                         image: { url: thumbnail },
                         caption,
                         contextInfo: {
-                            mentionedJid: [m.sender],
+                            mentionedJid: m.sender ? [m.sender] : [],
                             forwardingScore: 999,
                             isForwarded: true,
                             externalAdReply: {
-                                title: title,
-                                body: `${duration} • ${bitrate}`,
+                                title,
+                                body: `${duration} • MP3`,
                                 mediaType: 1,
                                 thumbnailUrl: thumbnail,
                                 sourceUrl: targetUrl,
                                 renderLargerThumbnail: true,
-                                showAdAttribution: true,
-                            },
-                        },
+                                showAdAttribution: true
+                            }
+                        }
                     },
                     { quoted: mek }
                 );
+            } catch (error) {
+                console.error(
+                    "[YouTube thumbnail] error:",
+                    error.message
+                );
             }
-        } catch (_) {}
+        }
 
-        // Send audio
-        await conn.sendMessage(
-            from,
-            {
-                audio: { url: audioUrl },
-                mimetype: "audio/mpeg",
-                ptt: false,
-                fileName: `${title}.mp3`,
-                contextInfo: {
-                    mentionedJid: [m.sender],
-                    forwardingScore: 999,
-                    isForwarded: true,
-                    externalAdReply: {
-                        title: title,
-                        body: `${duration} • ${bitrate}`,
-                        mediaType: 1,
-                        thumbnailUrl: thumbnail,
-                        sourceUrl: targetUrl,
-                        renderLargerThumbnail: true,
-                        showAdAttribution: true,
-                    },
+        // Send MP3 audio or MP4 video
+        if (mediaType === "mp4") {
+            await conn.sendMessage(
+                from,
+                {
+                    video: { url: mediaUrl },
+                    mimetype: "video/mp4",
+                    fileName: `${title.replace(/[\\/:*?"<>|]/g, "_")}.mp4`,
+                    caption,
+                    contextInfo: {
+                        mentionedJid: m.sender ? [m.sender] : [],
+                        forwardingScore: 999,
+                        isForwarded: true,
+                        externalAdReply: {
+                            title,
+                            body: `${duration} • MP4`,
+                            mediaType: 1,
+                            thumbnailUrl: thumbnail || undefined,
+                            sourceUrl: targetUrl,
+                            renderLargerThumbnail: true,
+                            showAdAttribution: true
+                        }
+                    }
                 },
-            },
-            { quoted: mek }
-        );
+                { quoted: mek }
+            );
+        } else {
+            await conn.sendMessage(
+                from,
+                {
+                    audio: { url: mediaUrl },
+                    mimetype: "audio/mpeg",
+                    ptt: false,
+                    fileName: `${title.replace(/[\\/:*?"<>|]/g, "_")}.mp3`,
+                    contextInfo: {
+                        mentionedJid: m.sender ? [m.sender] : [],
+                        forwardingScore: 999,
+                        isForwarded: true,
+                        externalAdReply: {
+                            title,
+                            body: `${duration} • MP3`,
+                            mediaType: 1,
+                            thumbnailUrl: thumbnail || undefined,
+                            sourceUrl: targetUrl,
+                            renderLargerThumbnail: true,
+                            showAdAttribution: true
+                        }
+                    }
+                },
+                { quoted: mek }
+            );
+        }
 
-        await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
+        await conn.sendMessage(from, {
+            react: { text: "✅", key: mek.key }
+        });
 
-    } catch (err) {
-        console.error("[song/play] error:", err);
-        await conn.sendMessage(from, { react: { text: "❌", key: mek.key } }).catch(() => {});
-        reply(`❌ Error: ${err.message}`);
+    } catch (error) {
+        console.error("[YouTube downloader] error:", error);
+
+        await conn.sendMessage(from, {
+            react: { text: "❌", key: mek.key }
+        }).catch(() => {});
+
+        const message =
+            error.response?.data?.message ||
+            error.response?.data?.error ||
+            error.message ||
+            "Unknown error";
+
+        return reply(`❌ Download Error: ${message}`);
     }
 }
 
 // ======================================================
-// .song
+// .song — MP3
 // ======================================================
 
 bandah(
@@ -246,15 +369,17 @@ bandah(
         desc: "Download YouTube audio (MP3)",
         category: "download",
         react: "🎵",
-        filename: __filename,
+        filename: __filename
     },
     async (conn, mek, m, ctx) => {
-        return handleYouTubeAudio(conn, mek, m, ctx);
+        return handleYouTubeMedia(
+            conn, mek, m, ctx, "mp3"
+        );
     }
 );
 
 // ======================================================
-// .play
+// .play — MP3
 // ======================================================
 
 bandah(
@@ -264,9 +389,31 @@ bandah(
         desc: "Play / download a song from YouTube",
         category: "download",
         react: "▶️",
-        filename: __filename,
+        filename: __filename
     },
     async (conn, mek, m, ctx) => {
-        return handleYouTubeAudio(conn, mek, m, ctx);
+        return handleYouTubeMedia(
+            conn, mek, m, ctx, "mp3"
+        );
+    }
+);
+
+// ======================================================
+// .video — MP4
+// ======================================================
+
+bandah(
+    {
+        pattern: "video",
+        alias: ["ytmp4", "ytvideo"],
+        desc: "Download YouTube video (MP4)",
+        category: "download",
+        react: "🎬",
+        filename: __filename
+    },
+    async (conn, mek, m, ctx) => {
+        return handleYouTubeMedia(
+            conn, mek, m, ctx, "mp4"
+        );
     }
 );
