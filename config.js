@@ -6,9 +6,9 @@ dotenv.config();
 const config = {
     MONGODB_URL:
         process.env.DATABASE_URL|| settings.DATABASE ||
-        "mongodb+srv://vagom95123_db_user:rgR1vtrdkSDS5zw9@cluster25.g2s1rix.mongodb.net/?appName=Cluster25",
+        "",
 
-    DB_NAME: process.env.DB_NAME || settings.DB_NAME || "shaban",
+    DB_NAME: process.env.DB_NAME || settings.DB_NAME || "smd-bot",
     PORT: process.env.PORT || settings.PORT || "20252",
 
     COLLECTIONS: {
@@ -23,7 +23,7 @@ const config = {
     AUTO_STATUS_REACT: "false",
     AUTO_STATUS_REPLY: "false",
     AUTO_STATUS_MSG: "Hello from TEAM-BANDAHEALI !",
-    ANTI_STATUS: "false",
+    ANTI_STATUS: "true",
 
     AUTO_RECORDING: "false",
     AUTO_REACT: "false",
@@ -40,7 +40,7 @@ const config = {
     AUTO_BIO: process.env.AUTO_BIO || "false",
 
     VERSION: "3.0.0",
-    DESCRIPTION: "*© POWERED BY SHABAN*",
+    DESCRIPTION: "*© POWERED BY MR SHABAN*",
 
     ANTI_DELETE_PATH: "inbox",
     ANTI_DELETE: "false",
@@ -48,7 +48,7 @@ const config = {
     ANTI_EDIT_PATH: "inbox",
     ANTI_EDIT: "false",
 
-    STICKER_NAME: "SMD-PRAIVET",
+    STICKER_NAME: "SHABAN-MD PRIVATE",
 
     ANTI_LINK: "false",
     ANTI_LINK_ACTION: "delete",
@@ -75,12 +75,12 @@ const config = {
 
     MENU_IMG: "https://bandaheali-cdn.koyeb.app/bandaheali/team.jpg",
 
-    BOT_NAME: "SMD-PERSONEL",
-    CAPTION: "Powered by Team-Bandaheali",
+    BOT_NAME: "SHABAN-MD PERSONAL",
+    CAPTION: "*POWERED BY TEAM-BANDAHEALI*",
 
     OWNER_NAME: "TEAM-BANDAHEALI",
-    OWNER_NUMBER: "923253617422",
-    DEV: "923253617422",
+    OWNER_NUMBER: "923043788282",
+    DEV: "923213373680",
 
     IK_IMAGE_PATH: "./lib/smd.jpg",
     BOT_IMAGE: "https://bandaheali-cdn.koyeb.app/bandaheali/smd.jpg",
@@ -152,7 +152,7 @@ const config = {
         ANTI_EDIT: "false",
         ANTI_EDIT_PATH: "inbox",
 
-        ANTI_CALL: "false",
+        ANTI_CALL: "true",
 
         ANTI_LINK: "false",
         ANTI_LINK_ACTION: "delete",
@@ -179,27 +179,27 @@ const config = {
         VERSION: "3.0.0",
 
         OWNER_NAME: "TEAM-BANDAHEALI",
-        OWNER_NUMBER: "923253617422",
-        DEV: "923253617422",
+        OWNER_NUMBER: "923043788282",
+        DEV: "923213373680",
 
-        DESCRIPTION: "*© POWERED BY SHABAN*",
+        DESCRIPTION: "*© POWERED BY SHABAN MD PRIVATE*",
 
-        STICKER_NAME: "SMD-PRAIVET",
+        STICKER_NAME: "SHABAN MD PERSONAL",
 
         MODE: "public",
         CHATBOT: "false",
 
         PREFIX: ".",
 
-        BOT_NAME: "SMD-PERSONEL",
+        BOT_NAME: "SMD PERSONAL",
 
         BOT_IMAGE:
-            "https://bandaheali-cdn.koyeb.app/bandaheali/smd-mini.jpg",
+            "https://ik.imagekit.io/shaban/SHABAN-1792476979350__BGpEt8Cx.jpg",
 
         MENU_IMG:
-            "https://bandaheali-cdn.koyeb.app/bandaheali/team.jpg",
+            "https://ik.imagekit.io/shaban/SHABAN-1792476979350__BGpEt8Cx.jpg",
 
-        CAPTION: "Powered by Team-Bandaheali",
+        CAPTION: "POWERED BY TEAM-BANDAHEALI",
 
         REACT_EMOJIS: [
             "😂",
